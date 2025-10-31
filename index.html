@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Blessed Maximum Care AFH</title>
+<meta name="theme-color" content="#1e3a8a" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--blue:#1e3a8a;--text:#e5e7eb;--muted:#9ca3af;--border:rgba(255,255,255,.12)}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:linear-gradient(180deg,#0b1220,#0f172a);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+  .container{max-width:1100px;margin:0 auto;padding:0 18px}
+  header{position:sticky;top:0;background:rgba(15,23,42,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:14px 0}
+  .brand{font-weight:800}
+  .cta{background:var(--blue);padding:10px 16px;border-radius:12px;color:#fff;text-decoration:none;font-weight:600}
+  main{padding:46px 0}
+  h1{margin:0 0 10px}
+  p.sub{color:var(--muted);margin:0 0 18px}
+  .grid{display:grid;gap:18px;grid-template-columns:repeat(2,1fr)}
+  @media (max-width:800px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--border);border-radius:16px;overflow:hidden;background:#111827}
+  .card img{width:100%;height:280px;object-fit:cover;display:block;background:#0b1220}
+  .body{padding:14px}
+  .small{font-size:12px;color:#9aa3b2}
+  footer{border-top:1px solid var(--border);margin-top:28px}
+  footer .container{padding:18px 18px 30px}
+  code{background:#0b1220;padding:0 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <div class="brand">Blessed Maximum Care AFH</div>
+    <a class="cta" href="#contact">Contact</a>
+  </div>
+</header>
+
+<main class="container">
+  <section>
+    <h1>Compassionate Adult Family Home Care</h1>
+    <p class="sub">Person-centered support in a warm, safe, RN-supervised home.</p>
+  </section>
+
+  <section aria-label="What we do" class="grid" id="grid">
+    <!-- Cards will be injected here -->
+  </section>
+
+  <section id="contact" style="margin-top:28px">
+    <p class="small">Address: 4213 W Indian Trail Rd, Spokane, WA 99208 • Phone: (509) 326-8617 • Email: blessedmaxcare@gmail.com</p>
+  </section>
+</main>
+
+<footer>
+  <div class="container small">© <span id="y"></span> Blessed Maximum Care AFH. All rights reserved.</div>
+</footer>
+
+<script>
+document.getElementById('y').textContent=new Date().getFullYear();
+
+// === CONFIG: change these four base names if you want different photos ===
+const BASES = ["IMG_0994","IMG_1003","IMG_1207","IMG_1261"];
+
+// For each base name, we’ll try these folder/extension combos:
+const FOLDERS = ["photos/","Photos/"];
+const EXTS = [".jpg",".JPG",".jpeg",".JPEG",".png",".PNG"];
+
+// Service text to pair with each photo
+const SERVICE_TEXT = [
+  {title:"Personal Care & Daily Support", body:"Respectful assistance with bathing, dressing, grooming, and mobility—focused on dignity and independence."},
+  {title:"Medication Management", body:"Safe administration and reminders with coordination across pharmacies and providers."},
+  {title:"Meals & Hydration", body:"Home-style menus tailored to preferences and needs, with snacks and hydration throughout the day."},
+  {title:"Activities & Companionship", body:"Light exercise, music, crafts, and community time to bring connection and joy."}
+];
+
+// Try to detect the first existing path by loading an Image
+function findExistingPath(base){
+  return new Promise(resolve=>{
+    let tried = [];
+    let i = 0;
+    const candidates = [];
+    FOLDERS.forEach(f=>EXTS.forEach(e=>candidates.push(f+base+e)));
+
+    function tryNext(){
+      if(i >= candidates.length){ resolve({src:null, tried}); return; }
+      const src = candidates[i++];
+      tried.push(src);
+      const img = new Image();
+      img.onload = ()=>resolve({src, tried});
+      img.onerror = tryNext;
+      img.src = src + (src.includes('?') ? '' : ('?cb=' + Date.now())); // bust cache
+    }
+    tryNext();
+  });
+}
+
+function placeholderSVG(triedList){
+  const msg = "Missing image. Tried:\\n" + triedList.join("\\n");
+  const esc = msg.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return `data:image/svg+xml;utf8,<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="960" height="400"><rect width="100%" height="100%" fill="#0b1220"/><text x="50%" y="50%" fill="#9aa3b2" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="14">${esc}</text></svg>`;
+}
+
+async function build(){
+  const grid = document.getElementById('grid');
+  for(let idx=0; idx<BASES.length; idx++){
+    const base = BASES[idx];
+    const {src, tried} = await findExistingPath(base);
+    const svc = SERVICE_TEXT[idx] || {title: base, body: ""};
+    const imgSrc = src ? src : placeholderSVG(tried);
+    const html = `
+      <article class="card">
+        <img alt="${svc.title}" src="${imgSrc}">
+        <div class="body">
+          <h3>${svc.title}</h3>
+          <p>${svc.body}</p>
+          <p class="small">${src ? `Showing <code>${src}</code>` : `Not found — see tried paths in placeholder.`}</p>
+        </div>
+      </article>`;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = html;
+    grid.appendChild(wrap.firstElementChild);
+  }
+}
+build();
+</script>
+</body>
+</html>
