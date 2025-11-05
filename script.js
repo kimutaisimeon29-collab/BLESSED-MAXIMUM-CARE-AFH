@@ -1,24 +1,19 @@
 
-// Simple lightbox for gallery
-function showLightbox(src, alt){
-  const lb = document.getElementById('lightbox');
-  const img = document.getElementById('lightbox-img');
-  img.src = src;
-  img.alt = alt || 'photo';
-  lb.hidden = false;
-}
-function hideLightbox(){
-  const lb = document.getElementById('lightbox');
-  lb.hidden = true;
-}
-// bind clicks
-document.addEventListener('click', (e)=>{
-  const a = e.target.closest('a.glink');
-  if(a){
-    e.preventDefault();
-    showLightbox(a.getAttribute('href'), a.querySelector('img')?.alt);
-  }
-  if(e.target.id === 'lightbox'){
-    hideLightbox();
-  }
+// Simple 2-image hero slider
+let idx = 0;
+const slides = document.querySelectorAll('.slide');
+const rotate = () => {
+  slides.forEach((s,i)=> s.classList.toggle('active', i === idx));
+  idx = (idx + 1) % slides.length;
+};
+rotate();
+setInterval(rotate, 5000);
+
+// Smooth scroll for nav links
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', e=>{
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  });
 });

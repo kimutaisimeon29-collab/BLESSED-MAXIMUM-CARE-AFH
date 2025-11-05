@@ -1,12 +1,9 @@
+
 [build]
   publish = "."
 
-[[redirects]]
-  from = "/success"
-  to = "/index.html#thank-you"
-  status = 301
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
